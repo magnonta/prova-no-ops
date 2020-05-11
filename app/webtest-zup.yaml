@@ -1,0 +1,92 @@
+---
+    apiVersion: v1
+    kind: Namespace
+    metadata: 
+      name: webtest-zup
+      labels: 
+        name: cluster-eks
+
+
+### APP - RESOURCE QUOTA ###
+# ---
+#     apiVersion: v1
+#     kind: ResourceQuota
+#     metadata:
+#       name: webtest-quota
+#       namespace: webtest-zup
+#     spec:
+#       hard:
+#         # cpu: "2"
+#         memory: 4Gi
+#         # persistentvolumeclaims: "10"
+#         # pods: "10"
+#         # replicationcontrollers: "20"
+#         resourcequotas: "1"
+#         # secrets: "10"
+#         # services: "5"
+    
+    ### webtest-zup - SERVICE ###
+    
+---
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: webtest-zup
+      annotations:
+        service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+      namespace: webtest-zup
+      labels:    
+        app: webtest-zup
+        version: latest
+    spec:
+      type: LoadBalancer
+      ports:
+      - name: 8181tcp
+        protocol: TCP
+        port: 8181
+        targetPort: 80
+      selector:
+        app: webtest-zup
+        version: latest
+    
+    ### webtest-zup - DEPLOYMENT ###
+    
+---
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: webtest-zup
+      namespace: webtest-zup
+      labels:
+        app: webtest-zup
+        version: latest
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: webtest-zup
+          version: latest
+      template:
+        metadata:
+          labels:
+            app: webtest-zup
+            version: latest
+        spec:
+          imagePullSecrets:
+          restartPolicy: Always
+          containers:
+          - name: webtest-zup
+            image: webpagetest/server:latest
+            ports:
+            - name: 8181tcp
+              containerPort: 8181
+              protocol: TCP
+            envFrom:
+            - configMapRef:
+                name: webtest-zup
+            env:
+            - name: NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            imagePullPolicy: Always
