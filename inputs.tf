@@ -57,9 +57,9 @@ variable "min-size" {
 }
 
 variable "secret_key" {
-  default = ""
+  default = "SECRET_KEY_AWS"
 }
 
 variable "access_key" {
-  default = ""
+  default = "ACCESS_KEY_AWS"
 }
