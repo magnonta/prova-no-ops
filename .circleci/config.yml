@@ -45,3 +45,12 @@ jobs:
           get-rollout-status: true
       - kubernetes/create-or-update-resource:
           resource-file-path: "../app/webtest-zup.yaml"
+
+workflows:
+  deployment:
+    jobs:
+      - deploy-application:
+          cluster-name: cks-cluster
+          aws-region: $AWS_DEFAULT_REGION
+          docker-image-name: "webpagetest/server:latest"
+          version-info: "${CIRCLE_SHA1}"
